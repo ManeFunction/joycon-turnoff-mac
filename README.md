@@ -16,7 +16,8 @@ This program writes to the SPI flash of your Nintendo Switch controller. While t
   - Pro Controller
   - SNES Controller
   - N64 Controller
-  *after porting it to macOS, I only tested it myself with Joy-Cons and a Pro Controller, but it should work with other listed controllers as well*
+
+  **after porting it to macOS, I only tested it myself with Joy-Cons and a Pro Controller, but it should work with other listed controllers as well*
 
 ## Prerequisites
 
