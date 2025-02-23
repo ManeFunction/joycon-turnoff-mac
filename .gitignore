@@ -1,3 +1,5 @@
 *.user
 Release/
 .vs/
+build/
+*.DS_Store
