@@ -140,10 +140,11 @@ If the controller is not detected:
 3. Try disconnecting and reconnecting the controller
 
 ## Uninstalling from Steam Deck
+
+Run the uninstaller, provided in the release you downloaded:
 ```bash
-rm -rf ~/.local/share/joycon-turnoff
-rm ~/.local/bin/joycon-turnoff
-rm ~/.local/share/applications/joycon-turnoff.desktop
+chmod +x deck-uninstall.sh
+./deck-uninstall.sh
 ```
 
 # General Information
