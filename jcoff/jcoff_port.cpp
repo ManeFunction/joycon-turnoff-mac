@@ -135,6 +135,7 @@ void maintain_led_state(hid_device* handle, bool& should_continue) {
     }
 }
 #endif
+
 void set_shipment_low_power(hid_device* handle) {
     uint8_t enable[1] = { 0x01 };
     joycon_send_subcommand(handle, CMD_SET_SHIPMENT_LOW_POWER_STATE, enable, 1);
