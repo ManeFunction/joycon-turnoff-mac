@@ -1,40 +1,58 @@
 cmake_minimum_required(VERSION 3.10)
 project(jcoff)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# On macOS, we use hidapi-mac from Homebrew
 if(APPLE)
-    # Find Homebrew's hidapi location
+    # Detect architecture
     execute_process(
-        COMMAND brew --prefix hidapi
-        OUTPUT_VARIABLE HIDAPI_PREFIX
+        COMMAND uname -m
+        OUTPUT_VARIABLE ARCH
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+
+    # Set Homebrew prefix based on architecture
+    if(ARCH STREQUAL "arm64")
+        set(BREW_PREFIX "/opt/homebrew")
+    else()
+        set(BREW_PREFIX "/usr/local")
+    endif()
+
+    find_library(HIDAPI_LIBRARY 
+        NAMES hidapi
+        PATHS "${BREW_PREFIX}/lib"
+        NO_DEFAULT_PATH
+        REQUIRED
+    )
     
-    set(HIDAPI_INCLUDE_DIR "${HIDAPI_PREFIX}/include")
-    set(HIDAPI_LIBRARY "${HIDAPI_PREFIX}/lib/libhidapi.dylib")
+    find_path(HIDAPI_INCLUDE_DIR 
+        NAMES hidapi.h
+        PATHS "${BREW_PREFIX}/include"
+        PATH_SUFFIXES hidapi
+        NO_DEFAULT_PATH
+        REQUIRED
+    )
+    
+    set(MAC_FRAMEWORKS
+        "-framework IOKit"
+        "-framework CoreFoundation"
+        "-framework AppKit"
+    )
 else()
-    # For other platforms, use pkg-config
+    # Linux dynamic build
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(HIDAPI REQUIRED hidapi)
+    pkg_check_modules(HIDAPI REQUIRED hidapi-hidraw)
+    pkg_check_modules(UDEV REQUIRED libudev)
+    pkg_check_modules(USB REQUIRED libusb-1.0)
 endif()
 
-# Add source files
-add_executable(jcoff
-    jcoff/jcoff_mac.cpp
-)
+add_executable(jcoff jcoff/jcoff_port.cpp)
 
-# Include directories
-target_include_directories(jcoff PRIVATE
-    ${CMAKE_SOURCE_DIR}/jcoff
-    ${HIDAPI_INCLUDE_DIR}
-)
-
-# Link libraries
 if(APPLE)
-    target_link_libraries(jcoff PRIVATE ${HIDAPI_LIBRARY})
+    target_include_directories(jcoff PRIVATE ${HIDAPI_INCLUDE_DIR})
+    target_link_libraries(jcoff PRIVATE ${HIDAPI_LIBRARY} ${MAC_FRAMEWORKS})
 else()
-    target_link_libraries(jcoff PRIVATE ${HIDAPI_LIBRARIES})
+    target_include_directories(jcoff PRIVATE ${HIDAPI_INCLUDE_DIRS})
+    target_link_libraries(jcoff PRIVATE ${HIDAPI_LIBRARIES} ${UDEV_LIBRARIES} ${USB_LIBRARIES})
 endif() 
